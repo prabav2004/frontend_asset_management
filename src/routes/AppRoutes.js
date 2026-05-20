@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-
 import ProtectedRoute from "../components/ProtectedRoute";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -11,26 +10,24 @@ import AddAsset from "../pages/admin/AddAsset";
 import ManageCategories from "../pages/admin/ManageCategories";
 import AssetRequests from "../pages/admin/AssetRequests";
 import ServiceRequests from "../pages/admin/ServiceRequests";
-import Employees from "../pages/admin/Employees";
 import Audits from "../pages/admin/Audits";
+import Employees from "../pages/admin/Employees";
 
 import EmployeeDashboard from "../pages/employee/EmployeeDashboard";
 import AvailableAssets from "../pages/employee/AvailableAssets";
 import MyAssets from "../pages/employee/MyAssets";
 import MyRequests from "../pages/employee/MyRequests";
 import RaiseServiceRequest from "../pages/employee/RaiseServiceRequest";
+import MyServiceRequests from "../pages/employee/MyServiceRequests";
 import MyAudits from "../pages/employee/MyAudits";
 
 function AppRoutes() {
   return (
     <Routes>
-
       <Route path="/" element={<Navigate to="/login" />} />
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-
-      {/* ADMIN */}
 
       <Route
         path="/admin/dashboard"
@@ -87,15 +84,6 @@ function AppRoutes() {
       />
 
       <Route
-        path="/admin/employees"
-        element={
-          <ProtectedRoute allowedRole="ADMIN">
-            <Employees />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
         path="/admin/audits"
         element={
           <ProtectedRoute allowedRole="ADMIN">
@@ -104,7 +92,14 @@ function AppRoutes() {
         }
       />
 
-      {/* EMPLOYEE */}
+      <Route
+        path="/admin/employees"
+        element={
+          <ProtectedRoute allowedRole="ADMIN">
+            <Employees />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/employee/dashboard"
@@ -123,6 +118,12 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+
+      <Route
+  path="/employee/my-service-requests"
+  element={<MyServiceRequests />}
+/>
 
       <Route
         path="/employee/my-assets"
@@ -159,7 +160,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
     </Routes>
   );
 }

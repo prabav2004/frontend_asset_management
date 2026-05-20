@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import {
+  getAllAssetRequests,
+  approveAssetRequest,
+  rejectAssetRequest,
+} from "../../api/assetRequestApi";
 
 function AssetRequests() {
   const [requests, setRequests] = useState([]);
@@ -10,86 +15,50 @@ function AssetRequests() {
   }, []);
 
   function loadRequests() {
-    let data = JSON.parse(localStorage.getItem("assetRequests")) || [];
-    setRequests(data);
+    getAllAssetRequests()
+      .then((res) => setRequests(res.data))
+      .catch((err) => console.log(err));
   }
 
-  function updateStatus(id, status) {
-    let updated = requests.map((r) =>
-      r.id === id ? { ...r, status: status } : r
-    );
+  function approve(id) {
+    approveAssetRequest(id).then(() => {
+      alert("Request approved");
+      loadRequests();
+    });
+  }
 
-    localStorage.setItem("assetRequests", JSON.stringify(updated));
-    setRequests(updated);
+  function reject(id) {
+    rejectAssetRequest(id).then(() => {
+      alert("Request rejected");
+      loadRequests();
+    });
   }
 
   return (
-    <div className="app-layout">
-      <Sidebar />
-
-      <div className="main-section">
-        <Navbar />
+    <>
+      <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
-          <div className="page-title">
-            <h1>Asset Requests</h1>
-            <p>Approve or reject employee asset requests.</p>
-          </div>
+          <h1>Asset Requests</h1>
 
-          <div className="table-card">
-            <table className="company-table">
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Asset</th>
-                  <th>Reason</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+          <div className="list-card">
+            {requests.map((r) => (
+              <div className="request-card" key={r.id}>
+                <h3>{r.asset?.assetName}</h3>
+                <p><b>Employee:</b> {r.user?.name}</p>
+                <p><b>Reason:</b> {r.reason}</p>
+                <p><b>Status:</b> {r.status}</p>
 
-              <tbody>
-                {requests.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.employeeName}</td>
-                    <td>{r.assetName}</td>
-                    <td>{r.reason}</td>
-                    <td>
-                      <span className={"badge " + r.status.toLowerCase()}>
-                        {r.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          className="success"
-                          onClick={() => updateStatus(r.id, "APPROVED")}
-                        >
-                          Approve
-                        </button>
-
-                        <button
-                          className="danger"
-                          onClick={() => updateStatus(r.id, "REJECTED")}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-
-                {requests.length === 0 && (
-                  <tr>
-                    <td colSpan="5">No asset requests found</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                <button onClick={() => approve(r.id)}>Approve</button>
+                <button className="danger" onClick={() => reject(r.id)}>Reject</button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

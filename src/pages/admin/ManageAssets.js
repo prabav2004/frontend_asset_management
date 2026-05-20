@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { getAllAssets, deleteAsset } from "../../api/assetApi";
 
 function ManageAssets() {
   const [assets, setAssets] = useState([]);
@@ -10,86 +11,55 @@ function ManageAssets() {
   }, []);
 
   function loadAssets() {
-    let data = JSON.parse(localStorage.getItem("assets")) || [];
-    setAssets(data);
+    getAllAssets()
+      .then((res) => setAssets(res.data))
+      .catch((err) => console.log(err));
   }
 
   function handleDelete(id) {
-    let updatedAssets = assets.filter((a) => a.id !== id);
-    localStorage.setItem("assets", JSON.stringify(updatedAssets));
-    setAssets(updatedAssets);
-  }
-
-  function getBadgeClass(status) {
-    if (status === "AVAILABLE") return "badge available";
-    if (status === "ALLOCATED") return "badge allocated";
-    if (status === "UNDER_MAINTENANCE") return "badge maintenance";
-    if (status === "RETIRED") return "badge retired";
-    return "badge";
+    deleteAsset(id)
+      .then(() => {
+        alert("Asset deleted");
+        loadAssets();
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Delete failed");
+      });
   }
 
   return (
-    <div className="app-layout">
-      <Sidebar />
-
-      <div className="main-section">
-        <Navbar />
+    <>
+      <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
-          <div className="page-title">
-            <h1>Assets</h1>
-            <p>Manage all company assets in one place.</p>
-          </div>
+          <h1>Manage Assets</h1>
 
-          <div className="table-card">
-            <table className="company-table">
-              <thead>
-                <tr>
-                  <th>Asset No</th>
-                  <th>Name</th>
-                  <th>Model</th>
-                  <th>Category</th>
-                  <th>Value</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+          <div className="card-grid">
+            {assets.map((asset) => (
+              <div className="asset-card" key={asset.id}>
+                <img
+                  src={asset.imageUrl || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"}
+                  alt={asset.assetName}
+                />
 
-              <tbody>
-                {assets.map((asset) => (
-                  <tr key={asset.id}>
-                    <td>{asset.assetNo}</td>
-                    <td>{asset.assetName}</td>
-                    <td>{asset.model}</td>
-                    <td>{asset.categoryName}</td>
-                    <td>₹{asset.assetValue}</td>
-                    <td>
-                      <span className={getBadgeClass(asset.status)}>
-                        {asset.status}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        className="danger"
-                        onClick={() => handleDelete(asset.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                <h3>{asset.assetName}</h3>
+                <p><b>Asset No:</b> {asset.assetNo}</p>
+                <p><b>Model:</b> {asset.model}</p>
+                <p><b>Status:</b> {asset.status}</p>
+                <p><b>Value:</b> ₹{asset.assetValue}</p>
 
-                {assets.length === 0 && (
-                  <tr>
-                    <td colSpan="7">No assets found</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                <button className="danger" onClick={() => handleDelete(asset.id)}>
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

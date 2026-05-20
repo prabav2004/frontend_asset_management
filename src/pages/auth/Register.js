@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { registerUser } from "../../api/authApi";
 
 function Register() {
   const navigate = useNavigate();
@@ -21,79 +22,51 @@ function Register() {
   function handleRegister(e) {
     e.preventDefault();
 
-    let users = JSON.parse(localStorage.getItem("users")) || [];
-
-    let exists = users.find((u) => u.email === form.email);
-
-    if (exists) {
-      alert("User already exists");
-      return;
-    }
-
-    users.push(form);
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Registration successful");
-    navigate("/login");
+    registerUser(form)
+      .then(() => {
+        alert("Registration successful");
+        navigate("/login");
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Registration failed");
+      });
   }
 
   return (
     <div className="auth-page">
-      <div className="auth-left">
-        <h1>Join AssetPro</h1>
-        <p>
-          Register as an admin or employee and manage company assets through a
-          clean enterprise dashboard.
+      <div className="auth-card">
+        <h1>Create Account</h1>
+        <p>Register to access the asset management portal</p>
+
+        <form onSubmit={handleRegister}>
+          <input name="name" placeholder="Full Name" onChange={handleChange} />
+          <select name="gender" onChange={handleChange}>
+            <option value="">Select Gender</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+          </select>
+          <input name="email" placeholder="Email" onChange={handleChange} />
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            onChange={handleChange}
+          />
+          <input name="contactNo" placeholder="Contact Number" onChange={handleChange} />
+          <textarea name="address" placeholder="Address" onChange={handleChange}></textarea>
+
+          <select name="role" value={form.role} onChange={handleChange}>
+            <option value="EMPLOYEE">Employee</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+
+          <button type="submit">Register</button>
+        </form>
+
+        <p className="auth-link">
+          Already have an account? <Link to="/login">Login</Link>
         </p>
-      </div>
-
-      <div className="auth-right">
-        <div className="auth-card">
-          <h2>Create Account</h2>
-          <p>Enter your details to continue</p>
-
-          <form onSubmit={handleRegister}>
-            <input name="name" placeholder="Full name" onChange={handleChange} />
-
-            <select name="gender" onChange={handleChange}>
-              <option value="">Select gender</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-            </select>
-
-            <input name="email" placeholder="Email address" onChange={handleChange} />
-
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              onChange={handleChange}
-            />
-
-            <input
-              name="contactNo"
-              placeholder="Contact number"
-              onChange={handleChange}
-            />
-
-            <textarea
-              name="address"
-              placeholder="Address"
-              onChange={handleChange}
-            ></textarea>
-
-            <select name="role" value={form.role} onChange={handleChange}>
-              <option value="EMPLOYEE">Employee</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-
-            <button type="submit">Create Account</button>
-          </form>
-
-          <p className="auth-link">
-            Already registered? <Link to="/login">Login</Link>
-          </p>
-        </div>
       </div>
     </div>
   );

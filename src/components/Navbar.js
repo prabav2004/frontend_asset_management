@@ -11,7 +11,7 @@ function Navbar() {
 
   return (
     <div className="navbar">
-      <h2>Company Asset Management</h2>
+      <h2>Asset Management System</h2>
 
       <div className="nav-right">
         <span>{getName()}</span>

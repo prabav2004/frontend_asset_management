@@ -1,70 +1,39 @@
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { getEmployeeAssetRequests } from "../../api/assetRequestApi";
+import { getUserId } from "../../utils/authStorage";
 
 function MyRequests() {
+  const [requests, setRequests] = useState([]);
 
-  const requests =
-    JSON.parse(localStorage.getItem("assetRequests")) || [];
+  useEffect(() => {
+    getEmployeeAssetRequests(getUserId())
+      .then((res) => setRequests(res.data))
+      .catch((err) => console.log(err));
+  }, []);
 
   return (
-    <div className="app-layout">
-
-      <Sidebar />
-
-      <div className="main-section">
-
-        <Navbar />
+    <>
+      <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
+          <h1>My Asset Requests</h1>
 
-          <div className="page-title">
-            <h1>My Requests</h1>
-            <p>Track your asset requests.</p>
+          <div className="list-card">
+            {requests.map((r) => (
+              <div className="request-card" key={r.id}>
+                <h3>{r.asset?.assetName}</h3>
+                <p><b>Reason:</b> {r.reason}</p>
+                <p><b>Status:</b> {r.status}</p>
+              </div>
+            ))}
           </div>
-
-          <div className="table-card">
-
-            <table className="company-table">
-
-              <thead>
-                <tr>
-                  <th>Asset</th>
-                  <th>Reason</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {requests.map((r) => (
-
-                  <tr key={r.id}>
-
-                    <td>{r.assetName}</td>
-
-                    <td>{r.reason}</td>
-
-                    <td>
-                      <span className={"badge " + r.status.toLowerCase()}>
-                        {r.status}
-                      </span>
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
         </div>
-
       </div>
-
-    </div>
+    </>
   );
 }
 

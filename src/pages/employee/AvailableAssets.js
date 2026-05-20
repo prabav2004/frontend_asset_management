@@ -1,86 +1,71 @@
 import { useEffect, useState } from "react";
-
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { getAvailableAssets } from "../../api/assetApi";
+import { requestAsset } from "../../api/assetRequestApi";
+import { getUserId } from "../../utils/authStorage";
 
 function AvailableAssets() {
-
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
-
-    let data =
-      JSON.parse(localStorage.getItem("assets")) || [];
-
-    let available =
-      data.filter((a) => a.status === "AVAILABLE");
-
-    setAssets(available);
-
+    loadAssets();
   }, []);
 
+  function loadAssets() {
+    getAvailableAssets()
+      .then((res) => setAssets(res.data))
+      .catch((err) => console.log(err));
+  }
+
+  function handleRequest(assetId) {
+    const reason = prompt("Enter reason for requesting this asset");
+
+    const data = {
+      userId: Number(getUserId()),
+      assetId: assetId,
+      reason: reason || "Need this asset",
+    };
+
+    requestAsset(data)
+      .then(() => {
+        alert("Asset request sent");
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Request failed");
+      });
+  }
+
   return (
-    <div className="app-layout">
-
-      <Sidebar />
-
-      <div className="main-section">
-
-        <Navbar />
+    <>
+      <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
+          <h1>Available Assets</h1>
 
-          <div className="page-title">
-            <h1>Available Assets</h1>
-            <p>View company assets available for allocation.</p>
+          <div className="card-grid">
+            {assets.map((asset) => (
+              <div className="asset-card" key={asset.id}>
+                <img
+                  src={asset.imageUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3"}
+                  alt={asset.assetName}
+                />
+
+                <h3>{asset.assetName}</h3>
+                <p><b>Asset No:</b> {asset.assetNo}</p>
+                <p><b>Model:</b> {asset.model}</p>
+                <p><b>Status:</b> {asset.status}</p>
+
+                <button onClick={() => handleRequest(asset.id)}>Request Asset</button>
+              </div>
+            ))}
           </div>
-
-          <div className="table-card">
-
-            <table className="company-table">
-
-              <thead>
-                <tr>
-                  <th>Asset No</th>
-                  <th>Asset</th>
-                  <th>Model</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {assets.map((a) => (
-
-                  <tr key={a.id}>
-
-                    <td>{a.assetNo}</td>
-
-                    <td>{a.assetName}</td>
-
-                    <td>{a.model}</td>
-
-                    <td>
-                      <span className="badge available">
-                        AVAILABLE
-                      </span>
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
         </div>
-
       </div>
-
-    </div>
+    </>
   );
 }
 

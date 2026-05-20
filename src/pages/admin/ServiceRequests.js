@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import {
+  getAllServiceRequests,
+  updateServiceRequestStatus,
+} from "../../api/serviceRequestApi";
 
 function ServiceRequests() {
-
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
@@ -12,118 +14,106 @@ function ServiceRequests() {
   }, []);
 
   function loadRequests() {
-
-    let data =
-      JSON.parse(localStorage.getItem("serviceRequests")) || [];
-
-    setRequests(data);
+    getAllServiceRequests()
+      .then((res) => {
+        console.log("SERVICE REQUESTS:", res.data);
+        setRequests(res.data);
+      })
+      .catch((err) => {
+        console.log("LOAD ERROR:", err);
+        alert("Failed to load service requests");
+      });
   }
 
   function updateStatus(id, status) {
+    const remarks = prompt("Enter admin remarks");
 
-    let updated = requests.map((r) =>
-      r.id === id
-        ? { ...r, status: status }
-        : r
-    );
+    if (!remarks || !remarks.trim()) {
+      alert("Please enter remarks");
+      return;
+    }
 
-    localStorage.setItem(
-      "serviceRequests",
-      JSON.stringify(updated)
-    );
+    updateServiceRequestStatus(id, status, remarks)
+      .then(() => {
+        alert("Service request updated successfully");
+        loadRequests();
+      })
+      .catch((err) => {
+        console.log("UPDATE ERROR:", err);
+        console.log("STATUS:", err.response?.status);
+        console.log("BACKEND:", err.response?.data);
 
-    setRequests(updated);
+        alert("Failed to update service request");
+      });
   }
 
   return (
-    <div className="app-layout">
+    <>
+      <Navbar />
 
-      <Sidebar />
-
-      <div className="main-section">
-
-        <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
+          <h1>Service Requests</h1>
 
-          <div className="page-title">
-            <h1>Service Requests</h1>
-            <p>Track maintenance and repair tickets.</p>
+          <div className="list-card">
+            {requests.length > 0 ? (
+              requests.map((r) => (
+                <div className="request-card" key={r.id}>
+                  <h3>{r.asset?.assetName || "Asset not available"}</h3>
+
+                  <p>
+                    <b>Employee:</b> {r.user?.name || "Unknown"}
+                  </p>
+
+                  <p>
+                    <b>Issue:</b> {r.issueType}
+                  </p>
+
+                  <p>
+                    <b>Description:</b> {r.description}
+                  </p>
+
+                  <p>
+                    <b>Status:</b> {r.status}
+                  </p>
+
+                  <p>
+                    <b>Admin Remarks:</b>{" "}
+                    {r.adminRemarks || r.remarks || "No remarks"}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => updateStatus(r.id, "IN_PROGRESS")}
+                  >
+                    In Progress
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => updateStatus(r.id, "RESOLVED")}
+                  >
+                    Resolve
+                  </button>
+
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => updateStatus(r.id, "REJECTED")}
+                  >
+                    Reject
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p>No service requests found</p>
+            )}
           </div>
-
-          <div className="table-card">
-
-            <table className="company-table">
-
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Asset</th>
-                  <th>Issue</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {requests.map((r) => (
-
-                  <tr key={r.id}>
-
-                    <td>{r.employeeName}</td>
-
-                    <td>{r.assetName}</td>
-
-                    <td>{r.description}</td>
-
-                    <td>
-                      <span className={"badge " + r.status.toLowerCase()}>
-                        {r.status}
-                      </span>
-                    </td>
-
-                    <td>
-
-                      <div className="action-buttons">
-
-                        <button
-                          className="success"
-                          onClick={() =>
-                            updateStatus(r.id, "RESOLVED")
-                          }
-                        >
-                          Resolve
-                        </button>
-
-                        <button
-                          className="danger"
-                          onClick={() =>
-                            updateStatus(r.id, "REJECTED")
-                          }
-                        >
-                          Reject
-                        </button>
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
         </div>
-
       </div>
-
-    </div>
+    </>
   );
 }
 

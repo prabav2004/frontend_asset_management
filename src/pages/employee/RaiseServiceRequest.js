@@ -1,14 +1,33 @@
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { getMyAllocatedAssets } from "../../api/adminApi";
+import { raiseServiceRequest } from "../../api/serviceRequestApi";
+import { getUserId } from "../../utils/authStorage";
 
 function RaiseServiceRequest() {
+  const [allocations, setAllocations] = useState([]);
 
   const [form, setForm] = useState({
-    assetName: "",
+    assetId: "",
     description: "",
+    issueType: "REPAIR",
   });
+
+  useEffect(() => {
+    loadAllocatedAssets();
+  }, []);
+
+  function loadAllocatedAssets() {
+    getMyAllocatedAssets(getUserId())
+      .then((res) => {
+        console.log("ALLOCATIONS:", res.data);
+        setAllocations(res.data);
+      })
+      .catch((err) => {
+        console.log("LOAD ASSET ERROR:", err);
+      });
+  }
 
   function handleChange(e) {
     setForm({
@@ -18,76 +37,100 @@ function RaiseServiceRequest() {
   }
 
   function handleSubmit(e) {
-
     e.preventDefault();
 
-    let requests =
-      JSON.parse(localStorage.getItem("serviceRequests")) || [];
+    if (!form.assetId) {
+      alert("Please select asset");
+      return;
+    }
 
-    requests.push({
-      id: Date.now(),
-      employeeName: "Employee",
-      assetName: form.assetName,
+    if (!form.description.trim()) {
+      alert("Please enter description");
+      return;
+    }
+
+    const data = {
+      userId: Number(getUserId()),
+      assetId: Number(form.assetId),
+      issueType: form.issueType,
       description: form.description,
-      status: "PENDING",
-    });
+    };
 
-    localStorage.setItem(
-      "serviceRequests",
-      JSON.stringify(requests)
-    );
+    console.log("SERVICE REQUEST DATA:", data);
 
-    alert("Service Request Sent");
+    raiseServiceRequest(data)
+      .then((res) => {
+        console.log("SUCCESS:", res.data);
 
-    setForm({
-      assetName: "",
-      description: "",
-    });
+        alert("Service request raised successfully");
+
+        setForm({
+          assetId: "",
+          description: "",
+          issueType: "REPAIR",
+        });
+      })
+      .catch((err) => {
+        console.log("FULL ERROR:", err);
+        console.log("STATUS:", err.response?.status);
+        console.log("BACKEND ERROR:", err.response?.data);
+
+        alert(
+          err.response?.data?.message ||
+            JSON.stringify(err.response?.data) ||
+            "Failed to raise request"
+        );
+      });
   }
 
   return (
-    <div className="app-layout">
+    <>
+      <Navbar />
 
-      <Sidebar />
-
-      <div className="main-section">
-
-        <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
-
-          <div className="page-title">
-            <h1>Raise Service Request</h1>
-            <p>Report maintenance or repair issues.</p>
-          </div>
+          <h1>Raise Service Request</h1>
 
           <form className="form-card" onSubmit={handleSubmit}>
-
-            <input
-              name="assetName"
-              placeholder="Asset Name"
-              value={form.assetName}
+            <select
+              name="assetId"
+              value={form.assetId}
               onChange={handleChange}
-            />
+            >
+              <option value="">Select Asset</option>
+
+              {allocations.map((a) => (
+                <option key={a.id} value={a.asset?.id}>
+                  {a.asset?.assetName}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="issueType"
+              value={form.issueType}
+              onChange={handleChange}
+            >
+              <option value="REPAIR">REPAIR</option>
+              <option value="DAMAGE">DAMAGE</option>
+              <option value="MALFUNCTION">MALFUNCTION</option>
+              <option value="OTHER">OTHER</option>
+            </select>
 
             <textarea
               name="description"
-              placeholder="Issue Description"
+              placeholder="Describe the issue"
               value={form.description}
               onChange={handleChange}
             ></textarea>
 
-            <button type="submit">
-              Submit Request
-            </button>
-
+            <button type="submit">Submit Request</button>
           </form>
-
         </div>
-
       </div>
-
-    </div>
+    </>
   );
 }
 

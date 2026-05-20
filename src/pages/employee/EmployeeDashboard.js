@@ -2,96 +2,39 @@ import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 
 function EmployeeDashboard() {
-
-  const requests =
-    JSON.parse(localStorage.getItem("assetRequests")) || [];
-
-  const services =
-    JSON.parse(localStorage.getItem("serviceRequests")) || [];
-
-  const audits =
-    JSON.parse(localStorage.getItem("audits")) || [];
-
   return (
-    <div className="app-layout">
-
-      <Sidebar />
-
-      <div className="main-section">
-
-        <Navbar />
+    <>
+      <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
+          <h1>Employee Dashboard</h1>
 
-          <div className="page-title">
-            <h1>Employee Dashboard</h1>
-            <p>Track assets, requests and audit status.</p>
-          </div>
-
-          <div className="stats-grid">
-
-            <div className="stat-card blue">
-              <p>My Requests</p>
-              <h2>{requests.length}</h2>
+          <div className="dashboard-grid">
+            <div className="dash-card">
+              <h3>Available Assets</h3>
+              <p>View and request available company assets.</p>
             </div>
 
-            <div className="stat-card orange">
-              <p>Service Requests</p>
-              <h2>{services.length}</h2>
+            <div className="dash-card">
+              <h3>My Assets</h3>
+              <p>Check assets currently assigned to you.</p>
             </div>
 
-            <div className="stat-card green">
-              <p>Audits</p>
-              <h2>{audits.length}</h2>
+            <div className="dash-card">
+              <h3>Service Request</h3>
+              <p>Raise repair or maintenance requests.</p>
             </div>
 
+            <div className="dash-card">
+              <h3>Audit</h3>
+              <p>Verify your assigned assets during audit.</p>
+            </div>
           </div>
-
-          <div className="table-card">
-
-            <h3>Recent Requests</h3>
-
-            <table className="company-table">
-
-              <thead>
-                <tr>
-                  <th>Asset</th>
-                  <th>Reason</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {requests.slice(0, 5).map((r) => (
-
-                  <tr key={r.id}>
-
-                    <td>{r.assetName}</td>
-
-                    <td>{r.reason}</td>
-
-                    <td>
-                      <span className={"badge " + r.status.toLowerCase()}>
-                        {r.status}
-                      </span>
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
         </div>
-
       </div>
-
-    </div>
+    </>
   );
 }
 

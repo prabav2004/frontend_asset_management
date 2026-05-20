@@ -1,60 +1,61 @@
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
+import { getMyAllocatedAssets } from "../../api/adminApi";
+import { returnAsset } from "../../api/assetRequestApi";
+import { getUserId } from "../../utils/authStorage";
 
 function MyAssets() {
+  const [allocations, setAllocations] = useState([]);
+
+  useEffect(() => {
+    loadAssets();
+  }, []);
+
+  function loadAssets() {
+    getMyAllocatedAssets(getUserId())
+      .then((res) => setAllocations(res.data))
+      .catch((err) => console.log(err));
+  }
+
+  function handleReturn(assetId) {
+    returnAsset(assetId)
+      .then(() => {
+        alert("Asset returned");
+        loadAssets();
+      })
+      .catch((err) => {
+        console.log(err);
+        alert("Return failed");
+      });
+  }
 
   return (
-    <div className="app-layout">
-
-      <Sidebar />
-
-      <div className="main-section">
-
-        <Navbar />
+    <>
+      <Navbar />
+      <div className="layout">
+        <Sidebar />
 
         <div className="content">
+          <h1>My Allocated Assets</h1>
 
-          <div className="page-title">
-            <h1>My Assets</h1>
-            <p>Assets allocated to you.</p>
+          <div className="card-grid">
+            {allocations.map((a) => (
+              <div className="asset-card" key={a.id}>
+                <h3>{a.asset?.assetName}</h3>
+                <p><b>Asset No:</b> {a.asset?.assetNo}</p>
+                <p><b>Model:</b> {a.asset?.model}</p>
+                <p><b>Status:</b> {a.asset?.status}</p>
+
+                <button className="danger" onClick={() => handleReturn(a.asset?.id)}>
+                  Return Asset
+                </button>
+              </div>
+            ))}
           </div>
-
-          <div className="table-card">
-
-            <table className="company-table">
-
-              <thead>
-                <tr>
-                  <th>Asset</th>
-                  <th>Model</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-
-                <tr>
-                  <td>Dell Laptop</td>
-                  <td>Latitude 5420</td>
-
-                  <td>
-                    <span className="badge allocated">
-                      ALLOCATED
-                    </span>
-                  </td>
-                </tr>
-
-              </tbody>
-
-            </table>
-
-          </div>
-
         </div>
-
       </div>
-
-    </div>
+    </>
   );
 }
 

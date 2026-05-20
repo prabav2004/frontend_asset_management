@@ -6,10 +6,6 @@ function Sidebar() {
 
   return (
     <div className="sidebar">
-      <div className="logo">
-        Asset<span>Pro</span>
-      </div>
-
       {role === "ADMIN" && (
         <>
           <Link to="/admin/dashboard">Dashboard</Link>
@@ -17,7 +13,7 @@ function Sidebar() {
           <Link to="/admin/assets/add">Add Asset</Link>
           <Link to="/admin/categories">Categories</Link>
           <Link to="/admin/asset-requests">Asset Requests</Link>
-          <Link to="/admin/service-requests">Service Tickets</Link>
+          <Link to="/admin/service-requests">Service Requests</Link>
           <Link to="/admin/audits">Audits</Link>
           <Link to="/admin/employees">Employees</Link>
         </>
@@ -30,6 +26,7 @@ function Sidebar() {
           <Link to="/employee/my-assets">My Assets</Link>
           <Link to="/employee/my-requests">My Requests</Link>
           <Link to="/employee/service-request">Service Request</Link>
+          <Link to="/employee/my-service-requests">My Service Requests</Link>
           <Link to="/employee/audits">Audits</Link>
         </>
       )}
